@@ -83,6 +83,15 @@ class AgendaCalculator {
     protected $festiveDays;
 
     /**
+     * List of Carbon\Carbon that indentify fixed closing days.
+     * Similar to festive days but in this case looking only at the date
+     * and ignore year match
+     *
+     * @var array
+     */
+    protected $fixedClosingDays;
+
+    /**
      * Padding interval the interval between the end of range and
      * the start of next calculate interval and between an existing event
      * and the calculate next range
@@ -101,6 +110,7 @@ class AgendaCalculator {
      * @param array $weekWorkingRanges
      * @param array $specialWorkingRanges
      * @param array $festiveDays
+     * @param array $fixedClosingDays
      * @param Carbon\CarbonInterval|null $paddingInterval
      * @return void
      * @throws InvalidArgumentException|LogicException
@@ -113,6 +123,7 @@ class AgendaCalculator {
         array $weekWorkingRanges,
         array $specialWorkingRanges,
         array $festiveDays,
+        array $fixedClosingDays,
         CarbonInterval $paddingInterval = null
     ) {
         $this->calculateRange = $calculateRange;
@@ -122,6 +133,7 @@ class AgendaCalculator {
         $this->weekWorkingRanges = $weekWorkingRanges;
         $this->specialWorkingRanges = $specialWorkingRanges;
         $this->festiveDays = $festiveDays;
+        $this->fixedClosingDays = $fixedClosingDays;
         $this->paddingInterval = $paddingInterval;
 
         // Validate attributes
@@ -130,6 +142,7 @@ class AgendaCalculator {
         $this->validateWeekWorkingRanges();
         $this->validateSpecialWorkingRanges();
         $this->validateFestiveDays();
+        $this->validateFixedClosingDaysDays();
     }
 
     /**
@@ -298,6 +311,22 @@ class AgendaCalculator {
         foreach ($this->festiveDays as $festiveDay) {
             if ( ! $festiveDay instanceof Carbon) {
                 throw new InvalidArgumentException('Festive days must be
+                    instance of Carbon\Carbon');
+            }
+        }
+    }
+
+    /**
+     * Validate fixed closing days expected to be instace of Carbon\Carbon
+     *
+     * @return void
+     * @throws InvalidArgumentException
+     */
+    protected function validateFixedClosingDaysDays()
+    {
+        foreach ($this->fixedClosingDays as $fixedClosingDay) {
+            if ( ! $fixedClosingDay instanceof Carbon) {
+                throw new InvalidArgumentException('Fixed closing days must be
                     instance of Carbon\Carbon');
             }
         }
@@ -485,9 +514,34 @@ class AgendaCalculator {
             return false;
         }
 
+        // Fixed closing day is a closing day
+        // but special working ranges if defined in a
+        // fixed closing days has priority
+        // it's a feature not a BUG!
+        if ($this->isAFixedClosingDays($day)) {
+            return true;
+        }
+
         // If day of week is not mapped to week working days
         // is a closing day otherwise isn't
         return ! isset($this->weekWorkingRanges[$day->dayOfWeek]);
+    }
+
+    /**
+     * Check if given day is a fixed closing day
+     *
+     * @return boolean
+     */
+    protected function isAFixedClosingDays(Carbon $day)
+    {
+        foreach ($this->fixedClosingDays as $fixedClosingDay) {
+            // lol but true
+            if ($fixedClosingDay->isBirthday($day)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

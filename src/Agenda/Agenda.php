@@ -56,6 +56,13 @@ class Agenda {
     protected $festiveDays;
 
     /**
+     * The fixedClosingDays attribute of AgendaCalculator
+     *
+     * @var array
+     */
+    protected $fixedClosingDays;
+
+    /**
      * The paddingInterval attribute of AgendaCalculator
      *
      * @var Carbon\CarbonInterval
@@ -83,6 +90,7 @@ class Agenda {
         array $weekWorkingRanges = array(),
         array $specialWorkingRanges = array(),
         array $festiveDays = array(),
+        array $fixedClosingDays = array(),
         CarbonInterval $paddingInterval = null
     ) {
         $this->calculateRange = $calculateRange;
@@ -92,6 +100,7 @@ class Agenda {
         $this->weekWorkingRanges = $weekWorkingRanges;
         $this->specialWorkingRanges = $specialWorkingRanges;
         $this->festiveDays = $festiveDays;
+        $this->fixedClosingDays = $fixedClosingDays;
         $this->paddingInterval = $paddingInterval;
     }
 
@@ -190,6 +199,18 @@ class Agenda {
     }
 
     /**
+     * Set fixed closing days
+     *
+     * @param array $fixedClosingDays
+     * @return Agenda\Agenda
+     */
+    public function setFixedClosingDays(array $fixedClosingDays)
+    {
+        $this->fixedClosingDays = $fixedClosingDays;
+        return $this;
+    }
+
+    /**
      * Set padding interval
      *
      * @param Carbon\CarbonInterval|null $paddingInterval
@@ -272,6 +293,16 @@ class Agenda {
     }
 
     /**
+     * Get fixed closing days
+     *
+     * @return array
+     */
+    public function getFixedClosingDays()
+    {
+        return $this->fixedClosingDays;
+    }
+
+    /**
      * Get padding interval
      *
      * @return Carbon\CarbonInterval|null
@@ -297,6 +328,7 @@ class Agenda {
             $this->weekWorkingRanges,
             $this->specialWorkingRanges,
             $this->festiveDays,
+            $this->fixedClosingDays,
             $this->paddingInterval
         );
     }
