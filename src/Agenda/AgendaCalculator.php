@@ -612,7 +612,7 @@ class AgendaCalculator {
     protected function getNearRange(Data\TimeRange $range, array $contRanges)
     {
         foreach ($contRanges as $contRange) {
-            if ($contRange->getStartTime()->gte($range->getEndTime())) {
+            if ($contRange->getEndTime()->gte($range->getEndTime())) {
                 return $contRange;
             }
         }
