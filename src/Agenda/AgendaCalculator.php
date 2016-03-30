@@ -342,7 +342,8 @@ class AgendaCalculator {
     {
         if (count($this->workstationIds) === 0) {
 
-            $ranges = $this->calculateRangesOnWorkstation();
+            // No need to filter events by workstation
+            $ranges = $this->calculateRangesOnWorkstation($this->events);
 
             // Map to BookableTimeRange without workstation
             $ranges = Arrays::each($ranges, function($range)
@@ -357,9 +358,13 @@ class AgendaCalculator {
 
             foreach ($this->workstationIds as $workstationId) {
 
+                // Filter events by workstaion
+                $events = $this
+                    ->getEventsFilteredByWorkstation($this->events, $workstationId);
+
                 // Get ranges of current workstation
                 $workstationRanges = $this
-                    ->calculateRangesOnWorkstation($workstationId);
+                    ->calculateRangesOnWorkstation($events);
 
                 // Merge ranges into new workstation ranges
                 $ranges = $this
@@ -379,10 +384,10 @@ class AgendaCalculator {
     /**
      * Calculate available ranges on workstation
      *
-     * @param int|null $workstationId
+     * @param array $eventsOnWorkstation
      * @return array
      */
-    protected function calculateRangesOnWorkstation($workstationId = null)
+    protected function calculateRangesOnWorkstation(array $eventsOnWorkstation)
     {
         // The container of available ranges on given workstation
         $availableRanges = array();
@@ -443,7 +448,7 @@ class AgendaCalculator {
 
             // Check overlapped events
             $overlappedEvents = $this
-                ->getOverlappedEventsOnWorkstation($loopRange, $workstationId);
+                ->getOverlappedEvents($eventsOnWorkstation, $loopRange);
             if (count($overlappedEvents)) {
 
                 // Get the overlapped event with the end more far
@@ -478,20 +483,32 @@ class AgendaCalculator {
     }
 
     /**
-     * Get overlapped events on workstation
+     * Get overlapped events by given range
      *
+     * @param array $events
      * @param Agenda\Data\TimeRange $range
-     * @param int|null $workstationId
      * @return array
      */
-    protected function getOverlappedEventsOnWorkstation(Data\TimeRange $range, $workstationId = null)
+    protected function getOverlappedEvents(array $events, Data\TimeRange $range)
     {
-        return Arrays::filter($this->events, function ($event)
-            use ($workstationId, $range)
+        return Arrays::filter($events, function ($event) use ($range)
         {
-            return
-                $event->getWorkastationId() === $workstationId &&
-                $event->overlap($range);
+            return $event->overlap($range);
+        });
+    }
+
+    /**
+     * Get events filtered by given workstation
+     *
+     * @param array $events
+     * @param int $workstationId
+     * @return array
+     */
+    protected function getEventsFilteredByWorkstation(array $events, $workstationId)
+    {
+        return Arrays::filter($events, function ($event) use ($workstationId)
+        {
+            return $event->getWorkastationId() === $workstationId;
         });
     }
 
@@ -696,7 +713,6 @@ class AgendaCalculator {
      * Take a list of bookable ranges and merge given list of ranges
      * if bookable range is in rangens to merge push the current workstation id
      * remaining ranges to merge are mapped to bookable and simple merged
-     *
      *
      * @param array $bookableRanges
      * @param array $rangesToMerge
