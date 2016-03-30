@@ -146,5 +146,31 @@ class Arrays {
     {
         return array_filter($array, $closure);
     }
+
+    /**
+     * Group elements of an array using a given callback function, using the
+     * result as key of new array returned
+     *
+     * @param array $array
+     * @param Closure $grouper
+     * @return array
+     */
+    public static function group(array $array, Closure $grouper)
+    {
+        $result = array();
+
+        foreach ($array as $key => $value) {
+            $groupKey = call_user_func($grouper, $value, $key);
+
+            if (! is_null($groupKey)) {
+                if (! isset($result[$groupKey])) {
+                    $result[$groupKey] = array();
+                }
+                $result[$groupKey][] = $value;
+            }
+        }
+
+        return $result;
+    }
 }
 

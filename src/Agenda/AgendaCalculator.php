@@ -362,6 +362,10 @@ class AgendaCalculator {
                 $events = $this
                     ->getEventsFilteredByWorkstation($this->events, $workstationId);
 
+                // Group by start date
+                $events = $this
+                    ->getEventsGrouppedByStartDate($events);
+
                 // Get ranges of current workstation
                 $workstationRanges = $this
                     ->calculateRangesOnWorkstation($events);
@@ -446,29 +450,34 @@ class AgendaCalculator {
                 }
             }
 
-            // Check overlapped events
-            $overlappedEvents = $this
-                ->getOverlappedEvents($eventsOnWorkstation, $loopRange);
-            if (count($overlappedEvents)) {
+            // Check if current day has events
+            $dayKey = $loopRange->getStartTime()->toDateString();
 
-                // Get the overlapped event with the end more far
-                $lastEndingEvent = Arrays::last(Arrays::sort($overlappedEvents, function ($range)
-                {
-                    return $range->getEndTime();
-                }));
+            if (isset($eventsOnWorkstation[$dayKey])) {
+                // Check overlapped events
+                $overlappedEvents = $this
+                    ->getOverlappedEvents($eventsOnWorkstation[$dayKey], $loopRange);
+                if (count($overlappedEvents)) {
 
-                // Calculate the new loop range and back to start of loop
-                $nextStartTime = $lastEndingEvent->getEndTime();
+                    // Get the overlapped event with the end more far
+                    $lastEndingEvent = Arrays::last(Arrays::sort($overlappedEvents, function ($range)
+                    {
+                        return $range->getEndTime();
+                    }));
 
-                // If given add padding time
-                if ( ! is_null($this->paddingInterval)) {
-                    $nextStartTime->add($this->paddingInterval);
+                    // Calculate the new loop range and back to start of loop
+                    $nextStartTime = $lastEndingEvent->getEndTime();
+
+                    // If given add padding time
+                    if ( ! is_null($this->paddingInterval)) {
+                        $nextStartTime->add($this->paddingInterval);
+                    }
+
+                    $loopRange = $loopRange->timeRangeInterval(
+                        $nextStartTime
+                    );
+                    continue;
                 }
-
-                $loopRange = $loopRange->timeRangeInterval(
-                    $nextStartTime
-                );
-                continue;
             }
 
             // Ok, this is a valid range
@@ -509,6 +518,20 @@ class AgendaCalculator {
         return Arrays::filter($events, function ($event) use ($workstationId)
         {
             return $event->getWorkastationId() === $workstationId;
+        });
+    }
+
+    /**
+     * Get events groupped by start date
+     *
+     * @param array $events
+     * @return array
+     */
+    protected function getEventsGrouppedByStartDate(array $events)
+    {
+        return Arrays::group($events, function ($event)
+        {
+            return $event->getStartTime()->toDateString();
         });
     }
 
