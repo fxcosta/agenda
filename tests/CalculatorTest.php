@@ -174,4 +174,74 @@ class CalculatorTest extends TestFixture
             $this->btr('2015-09-14 10:05:00', '2015-09-14 11:05:00')
         ));
     }
+
+    public function testWorkstations()
+    {
+        $ranges = Agenda\Agenda::agenda()
+            ->setCalculateRange($this->tr(
+                '2016-03-30 10:00',
+                '2016-03-30 18:00'
+            ))
+            ->setEventInterval(CarbonInterval::minutes(30))
+            ->setWeekWorkingRanges(array(
+                Carbon::WEDNESDAY => array(
+                    $this->tr('09:00', '11:00'),
+                    $this->tr('15:00', '17:40'),
+                )
+            ))
+            ->setWorkstationIds(array(1, 2, 3))
+            ->calculateRanges();
+
+        $this->assertBookableTimeRangesEqual($ranges, array(
+            $this->btr('2016-03-30 10:00:00', '2016-03-30 10:30:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 10:30:00', '2016-03-30 11:00:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 15:00:00', '2016-03-30 15:30:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 15:30:00', '2016-03-30 16:00:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 16:00:00', '2016-03-30 16:30:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 16:30:00', '2016-03-30 17:00:00', array(1, 2, 3)),
+            $this->btr('2016-03-30 17:00:00', '2016-03-30 17:30:00', array(1, 2, 3 ))
+        ));
+    }
+
+    public function testWorkstationsWithEvents()
+    {
+        $ranges = Agenda\Agenda::agenda()
+            ->setCalculateRange($this->tr(
+                '2016-03-30 10:00',
+                '2016-03-30 18:00'
+            ))
+            ->setEventInterval(CarbonInterval::minutes(30))
+            ->setEvents(array(
+                $this->event('2016-03-30 10:00:00', '2016-03-30 11:00:00', 1),
+                $this->event('2016-03-30 11:00:00', '2016-03-30 12:00:00', 2),
+                $this->event('2016-03-30 10:30:00', '2016-03-30 11:30:00', 3),
+                $this->event('2016-03-30 15:00:00', '2016-03-30 16:00:00', 3),
+                $this->event('2016-03-30 20:00:00', '2016-03-30 21:00:00', 3),
+                $this->event('2016-03-30 15:00:00', '2016-03-30 15:20:00', 1),
+                $this->event('2016-03-30 17:00:00', '2016-03-30 17:10:00', 3),
+            ))
+            ->setWeekWorkingRanges(array(
+                Carbon::WEDNESDAY => array(
+                    $this->tr('09:00', '11:00'),
+                    $this->tr('15:00', '17:40'),
+                )
+            ))
+            ->setWorkstationIds(array(1, 2, 3))
+            ->calculateRanges();
+
+        $this->assertBookableTimeRangesEqual($ranges, array(
+            $this->btr('2016-03-30 10:00:00', '2016-03-30 10:30:00', array(2, 3)),
+            $this->btr('2016-03-30 10:30:00', '2016-03-30 11:00:00', array(2)),
+            $this->btr('2016-03-30 15:00:00', '2016-03-30 15:30:00', array(2)),
+            $this->btr('2016-03-30 15:20:00', '2016-03-30 15:50:00', array(1)),
+            $this->btr('2016-03-30 15:30:00', '2016-03-30 16:00:00', array(2)),
+            $this->btr('2016-03-30 15:50:00', '2016-03-30 16:20:00', array(1)),
+            $this->btr('2016-03-30 16:00:00', '2016-03-30 16:30:00', array(2, 3)),
+            $this->btr('2016-03-30 16:20:00', '2016-03-30 16:50:00', array(1)),
+            $this->btr('2016-03-30 16:30:00', '2016-03-30 17:00:00', array(2, 3)),
+            $this->btr('2016-03-30 16:50:00', '2016-03-30 17:20:00', array(1)),
+            $this->btr('2016-03-30 17:00:00', '2016-03-30 17:30:00', array(2)),
+            $this->btr('2016-03-30 17:10:00', '2016-03-30 17:40:00', array(3)),
+        ));
+    }
 }

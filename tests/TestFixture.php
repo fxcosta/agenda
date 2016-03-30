@@ -24,6 +24,15 @@ class TestFixture extends PHPUnit_Framework_TestCase {
         );
     }
 
+    protected function event($start, $end, $workstationId = null)
+    {
+        return new Agenda\Data\Event(
+            Carbon::parse($start),
+            Carbon::parse($end),
+            $workstationId
+        );
+    }
+
     protected function assertValidCollectionOfBookableTimeRanges($ranges)
     {
         $this->assertContainsOnlyInstancesOf('Agenda\Data\BookableTimeRange', $ranges);

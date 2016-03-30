@@ -173,7 +173,7 @@ class BookableTimeRange extends TimeRange {
         );
 
         if ($this->areWorkstationsHandled()) {
-            $bookableTimeRangeJson['workstations'] = $this->workstations;
+            $bookableTimeRangeJson['workstations'] = $this->workstationIds;
         }
 
         return $bookableTimeRangeJson;
