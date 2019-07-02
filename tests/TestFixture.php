@@ -1,11 +1,13 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use PHPUnit\Framework\TestCase;
 
-class TestFixture extends PHPUnit_Framework_TestCase {
+class TestFixture extends TestCase
+{
 
     protected function tr($start, $end)
     {
@@ -68,5 +70,4 @@ class TestFixture extends PHPUnit_Framework_TestCase {
         }
         echo "\n";
     }
-
 }
