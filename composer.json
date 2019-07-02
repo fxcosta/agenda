@@ -1,10 +1,10 @@
 {
-  "name": "gffuma/agenda",
+  "name": "fxcosta/agenda",
   "description": "Calculate free slot of time as an virtual appointments agenda",
   "authors": [
     {
-      "name": "gffuma",
-      "email": "fumagalli.gf@gmail.com"
+      "name": "fxcosta",
+      "email": "fx3costa@gmail.com"
     }
   ],
   "require": {
