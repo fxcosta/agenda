@@ -1,10 +1,11 @@
 <?php
 
-require_once __DIR__.'/../vendor/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use Agenda\Util\Arrays;
+use PHPUnit\Framework\TestCase;
 
-class ArraysTest extends PHPUnit_Framework_TestCase
+class ArraysTest extends TestCase
 {
     public function testGroup()
     {
@@ -39,8 +40,7 @@ class ArraysTest extends PHPUnit_Framework_TestCase
             )
         );
 
-        $results = Arrays::group($arr, function ($guy)
-        {
+        $results = Arrays::group($arr, function ($guy) {
             if ($guy['age'] >= 30) {
                 return null;
             }
